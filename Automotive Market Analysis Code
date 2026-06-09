@@ -1,0 +1,102 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import seaborn as sns
+import warnings
+
+# 1. Setup & Data Loading
+warnings.filterwarnings("ignore")
+
+try:
+    # --- DATA GENERATION (Replace with your actual CSV) ---
+    np.random.seed(42)
+    data = {
+        'Manufacture_Year': np.random.randint(2015, 2025, 500),
+        'Body_Type': np.random.choice(['Sedan', 'SUV', 'Hatchback', 'Coupe', 'Luxury'], 500),
+        'Fuel_Type': np.random.choice(['Petrol', 'Diesel', 'Electric', 'Hybrid'], 500),
+        'Transmission': np.random.choice(['Manual', 'Automatic'], 500),
+        'Engine_CC': np.random.randint(1000, 5000, 500),
+        'Horsepower': np.random.randint(100, 600, 500),
+        'Price_USD': np.random.randint(15000, 95000, 500),
+        'Mileage_km_per_l': np.random.uniform(8, 25, 500),
+        'Manufacturing_Country': np.random.choice(['USA', 'Germany', 'Japan', 'Italy', 'South Korea'], 500)
+    }
+    df = pd.DataFrame(data)
+
+    # --- KPI CALCULATIONS ---
+    total_vehicles = len(df)
+    avg_price = df['Price_USD'].mean()
+    top_country = df['Manufacturing_Country'].mode()[0].upper()
+    electric_pct = (len(df[df['Fuel_Type'] == 'Electric']) / total_vehicles) * 100
+
+    # 2. Visual Style Setup
+    plt.style.use('dark_background')
+    BG_COLOR, CARD_COLOR, BORDER_COLOR = '#0d1117', '#161b22', '#30363d'
+    
+    fig = plt.figure(figsize=(24, 38), facecolor=BG_COLOR)
+    gs = gridspec.GridSpec(60, 2, figure=fig, hspace=8.0, wspace=0.45)
+
+    # --- MAIN HEADER ---
+    fig.text(0.5, 0.96, 'GLOBAL AUTOMOTIVE MARKET', fontsize=28, fontweight='bold', color='white', ha='center')
+    fig.text(0.5, 0.944, f'Data Analyst: Artur Montovani', fontsize=12, color='#8b949e', ha='center', style='italic')
+
+    # --- 1. KPI HEADER ---
+    kpis = [(f"{total_vehicles}", "TOTAL VEHICLES", "white"), (f"${avg_price:,.0f}", "AVG PRICE (USD)", "#00d4ff"), 
+            (top_country, "TOP PRODUCER", "#00ff88"), (f"{electric_pct:.1f}%", "EV SHARE", "#ffff00")]
+
+    for i, (val, label, col) in enumerate(kpis):
+        ax_card = fig.add_axes([0.06 + (i*0.23), 0.89, 0.20, 0.05], facecolor=CARD_COLOR)
+        for spine in ax_card.spines.values(): spine.set_edgecolor(BORDER_COLOR)
+        ax_card.text(0.5, 0.55, val, color=col, fontsize=18, ha='center', fontweight='bold')
+        ax_card.text(0.5, 0.25, label, color='#8b949e', fontsize=9, ha='center', fontweight='bold')
+        ax_card.set_xticks([]); ax_card.set_yticks([])
+
+    # --- ROW 1 ---
+    # Donut Chart with Title moved BELOW
+    ax1 = fig.add_subplot(gs[6:26, 0], facecolor=BG_COLOR) 
+    body_data = df['Body_Type'].value_counts()
+    ax1.pie(body_data, labels=body_data.index, autopct='%1.1f%%', startangle=140, 
+            colors=sns.color_palette("magma", len(body_data)), wedgeprops={'width': 0.6, 'edgecolor': BG_COLOR}, 
+            textprops={'fontsize': 13, 'fontweight': 'bold'})
+    ax1.set_title('BODY TYPE DISTRIBUTION', fontweight='bold', color='#00ff88', fontsize=18, pad=20)
+
+    ax2 = fig.add_subplot(gs[8:24, 1], facecolor=CARD_COLOR)
+    sns.countplot(data=df, y='Manufacturing_Country', palette='viridis', ax=ax2, order=df['Manufacturing_Country'].value_counts().index, hue='Manufacturing_Country', legend=False)
+    ax2.set_title('MARKET VOLUME BY COUNTRY', fontweight='bold', color='#00d4ff', fontsize=14, pad=20)
+    ax2.set_xlabel(''); ax2.set_ylabel('')
+
+    # --- ROW 2 ---
+    ax3 = fig.add_subplot(gs[30:42, 0], facecolor=CARD_COLOR)
+    df['Price_Bin'] = pd.cut(df['Price_USD'], bins=5)
+    new_labels = [str(label).replace(", ", "\n") for label in df['Price_Bin'].cat.categories]
+    pivot_data = df.pivot_table(index='Fuel_Type', columns='Price_Bin', values='Horsepower', aggfunc='mean').fillna(0)
+    sns.heatmap(pivot_data, annot=True, fmt='.0f', cmap='YlGnBu', ax=ax3, cbar=False, annot_kws={"size": 11})
+    ax3.set_title('AVG HORSEPOWER: FUEL vs PRICE RANGE', fontweight='bold', color='#ff4d6d', fontsize=14, pad=20)
+    ax3.set_xticklabels(new_labels, rotation=0, fontsize=9)
+    plt.setp(ax3.get_yticklabels(), rotation=0, fontweight='bold')
+
+    # Line Chart with Legend to the Right
+    ax4 = fig.add_subplot(gs[30:42, 1], facecolor=CARD_COLOR)
+    sns.lineplot(data=df, x='Manufacture_Year', y='Price_USD', hue='Transmission', palette='flare', ax=ax4, marker='o', errorbar=None)
+    ax4.set_title('PRICE EVOLUTION BY TRANSMISSION', fontweight='bold', color='#ffff00', fontsize=14, pad=20)
+    ax4.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=False)
+    ax4.set_xlabel(''); ax4.set_ylabel('')
+
+    # --- ROW 3 ---
+    # Scatter Plot with Legend to the Right
+    ax5 = fig.add_subplot(gs[48:58, 0], facecolor=CARD_COLOR)
+    sns.scatterplot(data=df, x='Engine_CC', y='Horsepower', hue='Fuel_Type', palette='bright', ax=ax5, s=80, alpha=0.7)
+    ax5.set_title('HORSEPOWER vs ENGINE CC', fontweight='bold', color='#00ff88', fontsize=14, pad=20)
+    ax5.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False, fontsize=9)
+
+    ax6 = fig.add_subplot(gs[48:58, 1], facecolor=CARD_COLOR)
+    sns.boxplot(data=df, x='Fuel_Type', y='Mileage_km_per_l', palette='pastel', ax=ax6, hue='Fuel_Type', legend=False)
+    ax6.set_title('FUEL EFFICIENCY (km/l) BY TYPE', fontweight='bold', color='#ffa500', fontsize=14, pad=20)
+    ax6.set_xlabel(''); ax6.set_ylabel('')
+
+    plt.subplots_adjust(bottom=0.05, top=0.92, left=0.08, right=0.88)
+    plt.show()
+
+except Exception as e:
+    print(f"Error: {e}")
