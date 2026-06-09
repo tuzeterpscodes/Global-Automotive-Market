@@ -1,7 +1,10 @@
 Global Automotive Market Analysis & Performance Insights📊.
- Project OverviewThis data analytics project provides a comprehensive, macro-level evaluation of the international automotive industry. By ingestion, engineering, and visualizing a multivariate dataset of 500 unique vehicles, the analysis isolates consumer preferences, shifts in drivetrain technology (EV vs. internal combustion), and engineering benchmarks across leading manufacturer nations to uncover global automotive market trends.
+
+ Project OverviewThis data analytics project provides a comprehensive, macro-level evaluation of the international automotive industry.
+ By ingestion, engineering, and visualizing a multivariate dataset of 500 unique vehicles, the analysis isolates consumer preferences, shifts in drivetrain technology (EV vs. internal combustion), and engineering benchmarks across leading manufacturer nations to uncover global automotive market trends.
 
 💡 Key Data Insights CapturedBody Type Market Distribution.
+
 A structural portfolio assessment detailing consumer volume across key vehicle formats (Luxury, Sedan, Hatchback, SUV, and Coupe), highlighting market equilibrium and platform trends.Geographic Market Volume: A comparative evaluation isolating the top automotive producer nations, demonstrating market volume leadership dominated by the USA, Japan, and Italy.Engineering Heatmap (Horsepower vs. Price Range).
 A multi-feature grid assessing average engine output across cross-sections of Fuel Types and binned price ranges, proving clear value-to-performance baselines for executive tracking.
 Price Evolution by Transmission.
